@@ -1,16 +1,18 @@
-## Hi there 👋
+# Аудит МСП 2025 — дашборд
 
-<!--
-**lekondra/lekondra** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
+Страница `index.html` при каждом открытии читает три таблицы из папки `data/` и заново считает все показатели, графики и фильтры.
 
-Here are some ideas to get you started:
+| Файл | Что в нём |
+|---|---|
+| `data/violations.csv` | таблица нарушений (173 строки) |
+| `data/sample.csv` | аудиторская выборка по 13 МСП |
+| `data/plan.csv` | План мероприятий |
 
-- 🔭 I’m currently working on ...
-- 🌱 I’m currently learning ...
-- 👯 I’m looking to collaborate on ...
-- 🤔 I’m looking for help with ...
-- 💬 Ask me about ...
-- 📫 How to reach me: ...
-- 😄 Pronouns: ...
-- ⚡ Fun fact: ...
--->
+## Как обновить данные
+
+1. На своём компьютере откройте `prepare-data.html` (двойной щелчок) и перетащите туда новую таблицу (CSV из Excel).
+2. Нажмите «Скачать …csv»: номера заявлений будут частично скрыты, числа и даты приведены к нужному виду.
+3. На GitHub откройте папку `data` → **Add file → Upload files**, перетащите скачанный файл и нажмите **Commit changes**.
+4. Через 1–2 минуты сайт покажет новые данные.
+
+Названия столбцов в первой строке менять нельзя.

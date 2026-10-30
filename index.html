@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Аудит МСП 2025</title>
+<style>
+  :root {
+    --font-anthropic-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-anthropic-serif: Georgia, "Times New Roman", serif;
+    --cds-gap-xs: 4px; --cds-gap-sm: 8px; --cds-gap-md: 12px; --cds-gap-lg: 20px;
+    --cds-pad-xs: 4px; --cds-pad-sm: 8px; --cds-pad-md: 12px; --cds-pad-lg: 16px;
+    --cds-font-size-title: 1.75rem; --cds-font-size-heading: 1.05rem; --cds-font-size-caption: .8125rem;
+    --cds-font-weight-medium: 500; --cds-radius: 8px; --cds-dur-slow: .3s;
+    --color-bg: #faf9f5; --color-panel: #ffffff; --color-fg: #1f1e1b; --color-fg-muted: #6b6a64; --color-border-line: #e5e3da;
+    --color-ok: #2e7d4f; --color-warn: #b7791f; --color-bad: #b42318;
+    --cds-chart-status-critical: #c8553d; --cds-chart-muted: #a8a29e; --cds-chart-grid: #eeece6;
+    --cds-surface-popover: #ffffff; --cds-border: #dcd9cf; --cds-shadow-popover: 0 6px 20px rgba(0,0,0,.12); --cds-text-secondary: #6b6a64;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --color-bg: #1c1b19; --color-panel: #262522; --color-fg: #eeece6; --color-fg-muted: #a6a39b; --color-border-line: #3a3935;
+      --color-ok: #5fb987; --color-warn: #e0a548; --color-bad: #f07a68;
+      --cds-chart-status-critical: #e07a62; --cds-chart-muted: #7c7871; --cds-chart-grid: #33322e;
+      --cds-surface-popover: #2e2d2a; --cds-border: #45443f; --cds-shadow-popover: 0 6px 20px rgba(0,0,0,.45); --cds-text-secondary: #a6a39b;
+    }
+  }
+  [hidden] { display: none !important; }
+  html { background: var(--color-bg); color: var(--color-fg); }
+  body { margin: 0 auto; max-width: 1200px; padding: 28px 20px 48px; font-family: var(--font-anthropic-sans); }
+  .au-status { margin: 0; padding: var(--cds-pad-sm) var(--cds-pad-md); border-radius: var(--cds-radius); border: 1px solid var(--color-border-line); background: var(--color-panel); color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+  .au-status.is-err { color: var(--color-bad); border-color: var(--color-bad); }
+  .au-foot { margin-top: 8px; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); border-top: 1px solid var(--color-border-line); padding-top: 12px; }
+
+  .au { font-family: var(--font-anthropic-sans); display: flex; flex-direction: column; gap: var(--cds-gap-lg); }
+  .au-head { display: flex; flex-direction: column; gap: var(--cds-gap-sm); }
+  .au-title { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0; text-wrap: balance; }
+  .au-lead { margin: 0; max-width: 72ch; color: var(--color-fg-muted); line-height: 1.5; }
+  .au-lead b, .au-tile b, .au b { font-weight: 600; color: var(--color-fg); font-variant-numeric: tabular-nums; }
+  .au-meta { margin: 0; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .au-tabs { display: flex; gap: var(--cds-gap-xs); flex-wrap: wrap; border-bottom: 1px solid var(--color-border-line); }
+  .au-tab { font: inherit; background: none; border: 0; border-bottom: 2px solid transparent; padding: var(--cds-pad-sm) var(--cds-pad-md); color: var(--color-fg-muted); cursor: pointer; margin-bottom: -1px; }
+  .au-tab[aria-selected="true"] { color: var(--color-fg); border-bottom-color: var(--color-fg); font-weight: 500; }
+  .au-tab:focus-visible { outline: 2px solid var(--color-fg); outline-offset: 2px; }
+  .au-sec { display: flex; flex-direction: column; gap: var(--cds-gap-lg); }
+  .au-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr)); gap: var(--cds-gap-md); }
+  .au-tile { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-md) var(--cds-pad-lg); display: flex; flex-direction: column; gap: var(--cds-gap-xs); min-width: 0; }
+  .au-tile-label { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .au .au-num { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); font-variant-numeric: tabular-nums; line-height: 1.15; }
+  .au-tile-sub { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .au-tile.is-ok .au-num { color: var(--color-ok); }
+  .au-tile.is-warn .au-num { color: var(--color-warn); }
+  .au-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr)); gap: var(--cds-gap-md); }
+  .au-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: flex; flex-direction: column; gap: var(--cds-gap-sm); min-width: 0; }
+  .au-card h2 { margin: 0; font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); }
+  .au-note { margin: 0; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.45; }
+  .au-legend { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs) var(--cds-gap-md); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: 0; padding: 0; list-style: none; }
+  .au-legend li { display: inline-flex; align-items: center; gap: 6px; }
+  .au-sw { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+  .s-fixed { background: var(--color-ok); }
+  .s-left { background: var(--color-warn); }
+  .s-court { background: var(--cds-chart-status-critical); }
+  .s-nonrec { background: var(--cds-chart-muted); }
+  .au-chart { position: relative; min-height: 6rem; display: flex; flex-direction: column; gap: var(--cds-gap-sm); }
+  .au-chart.is-scroll { max-height: 32rem; overflow: auto; padding-right: 4px; }
+  .au-bar-row { display: flex; flex-direction: column; gap: 4px; }
+  .au-bar-head { display: flex; justify-content: space-between; gap: var(--cds-gap-sm); font-size: var(--cds-font-size-caption); }
+  .au-bar-name { min-width: 0; overflow-wrap: anywhere; }
+  .au-bar-val { font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--color-fg); font-weight: 500; }
+  .au-track { display: flex; height: 12px; border-radius: 3px; overflow: hidden; background: var(--cds-chart-grid); }
+  .au-seg { height: 100%; min-width: 0; }
+  .au-seg:hover { filter: brightness(1.12); }
+  .au-tip { position: absolute; z-index: 5; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); border-radius: var(--cds-radius); box-shadow: var(--cds-shadow-popover); padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); pointer-events: none; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .au-tip-h { color: var(--cds-text-secondary); }
+  .au-tablebox { overflow: auto; max-height: 34rem; border-top: 1px solid var(--color-border-line); }
+  .au-table { width: 100%; border-collapse: collapse; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
+  .au-table th { position: sticky; top: 0; background: var(--color-panel); text-align: left; font-weight: 500; color: var(--color-fg-muted); padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); white-space: nowrap; z-index: 1; }
+  .au-table td { padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); vertical-align: top; }
+  .au-table .r { text-align: right; white-space: nowrap; }
+  .au-table td.pre { white-space: pre-line; min-width: 16rem; }
+  .au-sort { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+  .au-sort:hover { color: var(--color-fg); }
+  .au-pill { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: var(--cds-font-size-caption); white-space: nowrap; border: 1px solid var(--color-border-line); }
+  .p-ok { color: var(--color-ok); }
+  .p-warn { color: var(--color-warn); }
+  .p-bad { color: var(--color-bad); }
+  .p-muted { color: var(--color-fg-muted); }
+  .au-filters { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm); align-items: center; }
+  .au-filters select, .au-filters input { font: inherit; font-size: var(--cds-font-size-caption); padding: 6px 8px; border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); background: var(--color-bg); color: var(--color-fg); min-width: 0; max-width: 100%; }
+  .au-filters input { flex: 1 1 14rem; }
+  .au-chips { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm); }
+  .au-chip { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-sm) var(--cds-pad-md); display: flex; flex-direction: column; gap: 2px; min-width: 9rem; }
+  .au-chip { cursor: pointer; font: inherit; color: inherit; text-align: left; }
+  .au-chip:hover { border-color: var(--color-fg-muted); }
+  .au-chip[aria-pressed="true"] { border-color: var(--color-fg); box-shadow: inset 0 0 0 1px var(--color-fg); }
+  .au-chip-d { font-family: var(--font-anthropic-serif); font-size: var(--cds-font-size-heading); }
+  .au-chip-n { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .au-pick { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm); align-items: center; }
+  .au-pick select { font: inherit; padding: 6px 8px; border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); background: var(--color-bg); color: var(--color-fg); min-width: 0; max-width: 100%; }
+  .au-pick-sum { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+  .au-table td.wrap { min-width: 14rem; }
+  .au-banner { margin: 0; padding: var(--cds-pad-sm) var(--cds-pad-md); border-radius: var(--cds-radius); border: 1px solid var(--color-border-line); background: var(--color-panel); font-weight: 500; }
+  .au-banner.is-ok { color: var(--color-ok); }
+  .au-banner.is-info { color: var(--color-fg-muted); }
+  .au-who-row { cursor: pointer; border-radius: 4px; padding: 2px 4px; margin: -2px -4px; }
+  .au-who-row:hover, .au-who-row:focus-visible { background: var(--cds-chart-grid); outline: none; }
+  .au-who-row.is-on .au-bar-name { font-weight: 600; }
+  .au-who-row.is-on .au-seg { filter: brightness(0.85); }
+  .au-tip-l { display: flex; justify-content: space-between; gap: 12px; white-space: normal; max-width: 26rem; }
+  .au-tip-l span:last-child { white-space: nowrap; color: var(--cds-text-secondary); }
+</style>
+<script src="lib.js"></script>
+<script>
+  // Мини-среда выполнения: читает data/*.csv при каждом открытии страницы,
+  // считает показатели и перерисовывает блоки. Обновили CSV на GitHub — обновилась страница.
+  window.dash = (function () {
+    var SOURCES = ['violations', 'sample', 'plan'];
+    var raw = {}, calcs = [], draws = new Map(), listeners = [], cache = {};
+    var params = { msp: '183', ousr: '1' };
+    var ready = false;
+    function runDraw(id) {
+      var fn = draws.get(id);
+      if (!fn || !ready) return;
+      document.querySelectorAll('[data-draw="' + id + '"]').forEach(function (el) {
+        try { fn(el); } catch (e) { console.error('draw ' + id, e); }
+      });
+    }
+    function compute() {
+      cache = {};
+      SOURCES.forEach(function (s) { cache[s] = raw[s]; });
+      calcs.forEach(function (c) {
+        try { cache[c.id] = c.fn.apply(null, c.inputs.map(function (i) { return cache[i] || []; })); }
+        catch (e) { console.error('calc ' + c.id, e); cache[c.id] = null; }
+      });
+    }
+    function renderAll() {
+      if (!ready) return;
+      draws.forEach(function (_, id) { runDraw(id); });
+      listeners.forEach(function (fn) { try { fn(); } catch (e) { console.error(e); } });
+    }
+    var api = {
+      calc: function (id, def) { calcs.push({ id: id, inputs: def.inputs || [], fn: def.fn }); },
+      data: function (id) {
+        var d = cache[id];
+        return Array.isArray(d) ? { status: 'ok', data: d } : { status: ready ? 'error' : 'loading', data: [] };
+      },
+      draw: function (id, fn) { if (fn) { draws.set(id, fn); runDraw(id); } else runDraw(id); },
+      params: function () { return Object.assign({}, params); },
+      setParams: function (p) {
+        Object.keys(p).forEach(function (k) { if (p[k] == null || p[k] === '') delete params[k]; else params[k] = String(p[k]); });
+        renderAll();
+      },
+      onData: function (fn) { listeners.push(fn); if (ready) fn(); },
+      setLink: function (tab) { try { history.replaceState(null, '', '#' + tab); } catch (e) { location.hash = tab; } },
+      start: function () {
+        var status = document.getElementById('au-status');
+        var stamp = '?v=' + Date.now();
+        Promise.all(SOURCES.map(function (s) {
+          return fetch('data/' + s + '.csv' + stamp, { cache: 'no-store' }).then(function (r) {
+            if (!r.ok) throw new Error('data/' + s + '.csv — ' + r.status);
+            return r.arrayBuffer();
+          }).then(function (buf) {
+            var rows = AuLib.normalize(AuLib.parseCSV(AuLib.decode(buf)));
+            var miss = AuLib.missingCols(s, rows);
+            if (miss.length) throw new Error('в файле data/' + s + '.csv нет столбцов: ' + miss.join(', '));
+            raw[s] = rows;
+          });
+        })).then(function () {
+          compute(); ready = true; renderAll();
+          status.hidden = true;
+          document.getElementById('au-loaded').textContent = new Date().toLocaleString('ru-RU');
+          document.getElementById('au-rows').textContent = raw.violations.length + ' нарушений, ' + raw.sample.length + ' мер, ' + raw.plan.length + ' мероприятий Плана';
+        }).catch(function (e) {
+          status.hidden = false; status.className = 'au-status is-err';
+          status.textContent = 'Не удалось загрузить данные: ' + e.message + (location.protocol === 'file:' ? '. Страница работает только с сайта (GitHub Pages), а не при открытии файла с диска.' : '');
+          console.error(e);
+        });
+      },
+    };
+    return api;
+  })();
+</script>
+</head>
+<body>
+<p class="au-status" id="au-status">Загрузка данных…</p>
+
+<div class="au">
+  <header class="au-head">
+    <h1 class="au-title" id="top">Аудит назначения мер социальной поддержки в 2025 году</h1>
+    <p class="au-lead">Финансовых нарушений выявлено на <b data-draw="lead-total">—</b>. В ходе аудиторского мероприятия устранено <b data-draw="lead-pct">—</b> этой суммы, к возврату по уведомлениям остаётся <b data-draw="lead-left">—</b>, ещё <b data-draw="lead-court">—</b> взыскивается через суд.</p>
+    <p class="au-meta">Срок АМ: 20 мая – 29 октября 2026 года · Источники: заключение о результатах АМ, таблица нарушений, План мероприятий</p>
+  </header>
+
+  <nav class="au-tabs" role="tablist" aria-label="Разделы">
+    <button class="au-tab" role="tab" data-tab="overview" aria-selected="true">Обзор</button>
+    <button class="au-tab" role="tab" data-tab="registry" aria-selected="false">Реестр нарушений</button>
+    <button class="au-tab" role="tab" data-tab="ousr" aria-selected="false">По ОУСР</button>
+    <button class="au-tab" role="tab" data-tab="plan" aria-selected="false">План мероприятий</button>
+  </nav>
+
+  <section class="au-sec" id="overview" data-pane="overview">
+    <div class="au-tiles" id="kpis">
+      <div class="au-tile">
+        <span class="au-tile-label">Переплаты</span>
+        <span class="au-num" data-draw="k-over">—</span>
+        <span class="au-tile-sub">выплачено сверх положенного</span>
+      </div>
+      <div class="au-tile">
+        <span class="au-tile-label">Недоплаты</span>
+        <span class="au-num" data-draw="k-under">—</span>
+        <span class="au-tile-sub">не доплачено гражданам</span>
+      </div>
+      <div class="au-tile is-ok">
+        <span class="au-tile-label">Устранено в ходе АМ</span>
+        <span class="au-num" data-draw="k-fixed">—</span>
+        <span class="au-tile-sub"><b data-draw="k-fixedpct">—</b> от суммы нарушений</span>
+      </div>
+      <div class="au-tile is-warn">
+        <span class="au-tile-label">Остаток к возврату</span>
+        <span class="au-num" data-draw="k-left">—</span>
+        <span class="au-tile-sub">направлены уведомления или не устранено</span>
+      </div>
+      <div class="au-tile">
+        <span class="au-tile-label">Взыскивается через суд</span>
+        <span class="au-num" data-draw="k-court">—</span>
+        <span class="au-tile-sub"><b data-draw="k-courtn">—</b> заявлений: иски и решения</span>
+      </div>
+      <div class="au-tile">
+        <span class="au-tile-label">Нарушений и недостатков</span>
+        <span class="au-num" data-draw="k-count">—</span>
+        <span class="au-tile-sub">по <b data-draw="k-checked">—</b> проверенным заявлениям</span>
+      </div>
+    </div>
+
+    <div class="au-card" id="by-msp-card">
+      <h2>Суммы нарушений по мерам поддержки</h2>
+      <p class="au-note">Переплаты и недоплаты, руб. Цвет показывает, что стало с суммой. МСП 183 даёт основную долю: в основном это пособия, не прекращённые после помещения ребёнка на полное гособеспечение или установления отцовства.</p>
+      <ul class="au-legend">
+        <li><span class="au-sw s-fixed"></span>Устранено в ходе АМ</li>
+        <li><span class="au-sw s-left"></span>Остаток к возврату</li>
+        <li><span class="au-sw s-court"></span>Через суд</li>
+        <li><span class="au-sw s-nonrec"></span>Не подлежит возмещению</li>
+      </ul>
+      <div class="au-chart" id="by-msp" data-draw="by-msp"></div>
+    </div>
+
+    <div class="au-grid">
+      <div class="au-card" id="by-ousr-card">
+        <h2>Суммы нарушений по ОУСР</h2>
+        <p class="au-note">Те же суммы в разрезе окружных управлений, по убыванию.</p>
+        <ul class="au-legend">
+          <li><span class="au-sw s-fixed"></span>Устранено</li>
+          <li><span class="au-sw s-left"></span>К возврату</li>
+          <li><span class="au-sw s-court"></span>Суд</li>
+          <li><span class="au-sw s-nonrec"></span>Не подлежит</li>
+        </ul>
+        <div class="au-chart is-scroll" id="by-ousr" data-draw="by-ousr"></div>
+      </div>
+      <div class="au-card" id="by-status-card">
+        <h2>Статус устранения</h2>
+        <p class="au-note">Число нарушений и недостатков по статусу из таблицы нарушений.</p>
+        <div class="au-chart" id="by-status" data-draw="by-status"></div>
+        <h2>Кто допустил нарушение</h2>
+        <p class="au-note">Наведите на строку, чтобы увидеть основные нарушения; щёлкните — список всех нарушений этой группы появится ниже.</p>
+        <div class="au-chart" id="by-who" data-draw="by-who"></div>
+        <div id="who-detail" data-who-detail hidden>
+          <p class="au-pick-sum"><b data-draw="who-name">—</b> · <a href="#by-who" data-who-clear>сбросить выбор</a></p>
+          <div class="au-tablebox">
+            <table class="au-table">
+              <thead><tr>
+                <th>Пункт</th>
+                <th>Нарушение</th>
+                <th class="r">Случаев</th>
+                <th class="r">Сумма, руб.</th>
+              </tr></thead>
+              <tbody data-draw="who-issues"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="au-card" id="msp-issues-card">
+      <h2>Нарушения по выбранной мере</h2>
+      <p class="au-note">Выберите меру поддержки: ниже нарушения, выявленные по ней, с числом случаев и суммами. Формулировки взяты из столбца «Краткое содержание нарушения».</p>
+      <div class="au-pick">
+        <select id="pick-msp" data-draw="pick-msp" aria-label="Мера поддержки"></select>
+        <span class="au-pick-sum" data-draw="msp-sum">—</span>
+      </div>
+      <div class="au-tablebox">
+        <table class="au-table">
+          <thead><tr>
+            <th>Пункт</th>
+            <th>Нарушение</th>
+            <th class="r">Случаев</th>
+            <th class="r">Сумма, руб.</th>
+            <th class="r">Устранено</th>
+            <th class="r">Остаток</th>
+          </tr></thead>
+          <tbody data-draw="msp-issues"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="au-card" id="sample-card">
+      <h2>Аудиторская выборка по мерам</h2>
+      <p class="au-note">Сколько заявлений подано и проверено (назначения и отказы вместе), сколько нарушений найдено и на какую сумму.</p>
+      <div class="au-tablebox">
+        <table class="au-table">
+          <thead><tr>
+            <th>МСП</th>
+            <th>Мера</th>
+            <th class="r">Заявлений</th>
+            <th class="r">Проверено</th>
+            <th class="r">Выборка</th>
+            <th class="r">Нарушений</th>
+            <th class="r">Сумма, руб.</th>
+          </tr></thead>
+          <tbody data-draw="msp-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="au-sec" id="registry" data-pane="registry" hidden>
+    <div class="au-card">
+      <h2>Реестр нарушений</h2>
+      <p class="au-note">Все нарушения из таблицы. Отфильтруйте по мере или статусу, найдите заявление по номеру. Заголовки столбцов сортируют. Номера заявлений частично скрыты.</p>
+      <div class="au-filters">
+        <select id="f-msp" data-draw="f-msp" aria-label="Мера"></select>
+        <select id="f-status" data-draw="f-status" aria-label="Статус"></select>
+        <input id="f-q" type="search" placeholder="Номер заявления, ОУСР, пункт…" aria-label="Поиск">
+      </div>
+      <p class="au-note">Показано: <b data-draw="vt-count">—</b></p>
+      <div class="au-tablebox">
+        <table class="au-table" id="vt">
+          <thead><tr>
+            <th><button class="au-sort" data-sort="item">Пункт</button></th>
+            <th><button class="au-sort" data-sort="msp">МСП</button></th>
+            <th><button class="au-sort" data-sort="ousr">ОУСР</button></th>
+            <th>Заявление</th>
+            <th>Нарушение</th>
+            <th>Вид</th>
+            <th class="r"><button class="au-sort" data-sort="amount">Сумма</button></th>
+            <th class="r"><button class="au-sort" data-sort="fixed">Устранено</button></th>
+            <th class="r"><button class="au-sort" data-sort="left">Остаток</button></th>
+            <th>Статус</th>
+          </tr></thead>
+          <tbody data-draw="vt"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="au-sec" id="ousr" data-pane="ousr" hidden>
+    <div class="au-card">
+      <h2>Окружное управление</h2>
+      <div class="au-pick">
+        <select id="pick-ousr" data-draw="pick-ousr" aria-label="ОУСР"></select>
+      </div>
+    </div>
+    <p class="au-banner is-ok" data-ousr-msg="done" hidden>Все нарушения устранены в ходе аудита</p>
+    <p class="au-banner is-ok" data-ousr-msg="court" hidden>Остатка к возврату нет: всё, что не устранено в ходе аудита, взыскивается через суд. (считаем, что устранено)</p>
+    <div class="au-tiles" id="ousr-kpis">
+      <div class="au-tile">
+        <span class="au-tile-label">Нарушений и недостатков</span>
+        <span class="au-num" data-draw="o-count">—</span>
+        <span class="au-tile-sub">из них финансовых: <b data-draw="o-fin">—</b></span>
+      </div>
+      <div class="au-tile">
+        <span class="au-tile-label">Сумма нарушений</span>
+        <span class="au-num" data-draw="o-total">—</span>
+        <span class="au-tile-sub">переплаты и недоплаты</span>
+      </div>
+      <div class="au-tile is-ok">
+        <span class="au-tile-label">Устранено в ходе АМ</span>
+        <span class="au-num" data-draw="o-fixed">—</span>
+        <span class="au-tile-sub"><b data-draw="o-pct">—</b> от суммы</span>
+      </div>
+      <div class="au-tile is-warn">
+        <span class="au-tile-label">Остаток к возврату</span>
+        <span class="au-num" data-draw="o-left">—</span>
+        <span class="au-tile-sub" data-ousr-sub="open">уведомления и не устранено</span>
+        <span class="au-tile-sub" data-ousr-sub="done" hidden>Все нарушения устранены в ходе аудита</span>
+      </div>
+      <div class="au-tile">
+        <span class="au-tile-label">Через суд</span>
+        <span class="au-num" data-draw="o-court">—</span>
+        <span class="au-tile-sub">иски и решения суда</span>
+      </div>
+    </div>
+    <div class="au-card">
+      <h2>Нарушения управления</h2>
+      <p class="au-note">Все нарушения выбранного ОУСР из таблицы нарушений.</p>
+      <div class="au-tablebox">
+        <table class="au-table">
+          <thead><tr>
+            <th>Пункт</th>
+            <th>МСП</th>
+            <th>Заявление</th>
+            <th>Нарушение</th>
+            <th class="r">Сумма</th>
+            <th class="r">Устранено</th>
+            <th class="r">Остаток</th>
+            <th>Статус</th>
+          </tr></thead>
+          <tbody data-draw="o-table"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="au-card">
+      <h2>Мероприятия Плана для управления</h2>
+      <p class="au-note">Пункты Плана, где ответственным указан выбранный ОУСР или все ОУСР.</p>
+      <div class="au-tablebox">
+        <table class="au-table">
+          <thead><tr>
+            <th>Пункт</th>
+            <th>Мероприятие</th>
+            <th>Ответственный</th>
+            <th class="r">Срок</th>
+          </tr></thead>
+          <tbody data-draw="o-plan"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="au-sec" id="plan" data-pane="plan" hidden>
+    <div class="au-card">
+      <h2>Сроки исполнения</h2>
+      <p class="au-note">Сколько мероприятий Плана приходится на каждый срок. Щёлкните по сроку, чтобы показать только его мероприятия; повторный щелчок снимает выбор.</p>
+      <div class="au-chips" data-draw="dl"></div>
+    </div>
+    <div class="au-card">
+      <h2>Мероприятия Плана</h2>
+      <p class="au-note">Пункт Плана, мероприятие, ответственный и срок. По п. 8 перечислены заявления, по которым продолжается возврат переплат. Выберите ответственного и (или) срок исполнения: фильтр действует на таблицу, а ответственный — и на сроки выше. Срок можно выбрать и щелчком по карточке срока.</p>
+      <div class="au-pick">
+        <select id="pick-resp" data-draw="pick-resp" aria-label="Ответственный"></select>
+        <select id="pick-dl" data-draw="pick-dl" aria-label="Срок исполнения"></select>
+        <span class="au-pick-sum" data-draw="resp-sum">—</span>
+      </div>
+      <div class="au-tablebox">
+        <table class="au-table">
+          <thead><tr>
+            <th>Пункт</th>
+            <th>Мероприятие</th>
+            <th>Ответственный</th>
+            <th class="r">Срок</th>
+          </tr></thead>
+          <tbody data-draw="plan-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <footer class="au-foot">Данные: файлы <code>data/violations.csv</code>, <code>data/sample.csv</code>, <code>data/plan.csv</code> (<span id="au-rows">—</span>). Загружены: <span id="au-loaded">—</span>. Номера заявлений частично скрыты.</footer>
+</div>
+
+<script>
+  dash.calc('kpi', {
+    inputs: ['violations', 'sample'],
+    fn: (violations, sample) => {
+      const num = (x) => { const v = Number(String(x ?? '').replace(',', '.')); return Number.isFinite(v) ? v : 0; };
+      let overpay = 0, underpay = 0, fixed = 0, left = 0, court = 0, court_n = 0;
+      for (const r of violations) {
+        const a = num(r.amount), f = num(r.fixed), l = num(r.left);
+        if (r.type === 'переплата') overpay += a;
+        if (r.type === 'недоплата') underpay += a;
+        if (r.type !== 'переплата' && r.type !== 'недоплата') continue;
+        fixed += f; left += l;
+        if (/суд/.test(r.status || '')) { court += Math.max(0, a - f - l); court_n += 1; }
+      }
+      const fin_total = overpay + underpay;
+      const checked = sample.reduce((s, r) => s + num(r.granted_checked) + num(r.refusals_checked), 0);
+      return [{ overpay, underpay, fin_total, fixed, fixed_pct: fin_total ? fixed / fin_total : 0, left, court, court_n, count: violations.length, checked }];
+    },
+  });
+
+  dash.calc('by_msp', {
+    inputs: ['violations', 'sample'],
+    fn: (violations, sample) => {
+      const num = (x) => { const v = Number(String(x ?? '').replace(',', '.')); return Number.isFinite(v) ? v : 0; };
+      const names = Object.fromEntries(sample.map((s) => [String(s.msp), s.name]));
+      const m = new Map();
+      for (const r of violations) {
+        if (r.type !== 'переплата' && r.type !== 'недоплата') continue;
+        const k = String(r.msp);
+        const a = num(r.amount), f = num(r.fixed), l = num(r.left), st = r.status || '';
+        const o = m.get(k) || { msp: k, label: 'МСП ' + k + (names[k] ? ' · ' + names[k] : ''), fixed: 0, left: 0, court: 0, nonrec: 0, total: 0 };
+        o.fixed += f; o.left += l; o.total += a;
+        if (/суд/.test(st)) o.court += Math.max(0, a - f - l);
+        if (/не подлежит/.test(st)) o.nonrec += Math.max(0, a - f - l);
+        m.set(k, o);
+      }
+      return [...m.values()].filter((o) => o.total > 0).sort((a, b) => b.total - a.total);
+    },
+  });
+
+  dash.calc('by_msp_all', {
+    inputs: ['violations', 'sample'],
+    fn: (violations, sample) => {
+      const names = Object.fromEntries(sample.map((s) => [String(s.msp), s.name]));
+      const set = [...new Set(violations.map((r) => String(r.msp)))].sort((a, b) => Number(a) - Number(b));
+      return set.map((msp) => ({ msp, name: names[msp] || '', n: violations.filter((r) => String(r.msp) === msp).length }));
+    },
+  });
+
+  dash.calc('by_ousr', {
+    inputs: ['violations'],
+    fn: (violations) => {
+      const num = (x) => { const v = Number(String(x ?? '').replace(',', '.')); return Number.isFinite(v) ? v : 0; };
+      const m = new Map();
+      for (const r of violations) {
+        if (r.type !== 'переплата' && r.type !== 'недоплата') continue;
+        if (!r.ousr) continue;
+        const k = String(r.ousr);
+        const a = num(r.amount), f = num(r.fixed), l = num(r.left), st = r.status || '';
+        const o = m.get(k) || { ousr: k, label: 'ОУСР № ' + k, fixed: 0, left: 0, court: 0, nonrec: 0, total: 0 };
+        o.fixed += f; o.left += l; o.total += a;
+        if (/суд/.test(st)) o.court += Math.max(0, a - f - l);
+        if (/не подлежит/.test(st)) o.nonrec += Math.max(0, a - f - l);
+        m.set(k, o);
+      }
+      return [...m.values()].filter((o) => o.total > 0).sort((a, b) => b.total - a.total);
+    },
+  });
+
+  dash.calc('by_status', {
+    inputs: ['violations'],
+    fn: (violations) => {
+      const m = new Map();
+      for (const r of violations) { const k = r.status || 'не указан'; m.set(k, (m.get(k) || 0) + 1); }
+      return [...m].map(([status, n]) => ({ status, n })).sort((a, b) => b.n - a.n);
+    },
+  });
+
+  dash.calc('by_who', {
+    inputs: ['violations'],
+    fn: (violations) => {
+      const m = new Map();
+      for (const r of violations) { const k = r.who || 'не указано'; m.set(k, (m.get(k) || 0) + 1); }
+      return [...m].map(([who, n]) => ({ who, n })).sort((a, b) => b.n - a.n);
+    },
+  });
+
+  dash.calc('who_issues', {
+    inputs: ['violations'],
+    fn: (violations) => {
+      const num = (x) => { const v = Number(String(x ?? '').replace(',', '.')); return Number.isFinite(v) ? v : 0; };
+      const m = new Map();
+      for (const r of violations) {
+        const who = r.who || 'не указано';
+        const k = who + '|' + r.item + '|' + r.summary;
+        const o = m.get(k) || { who, item: r.item, summary: r.summary || '', n: 0, amount: 0 };
+        o.n += 1;
+        if (r.type === 'переплата' || r.type === 'недоплата') o.amount += num(r.amount);
+        m.set(k, o);
+      }
+      return [...m.values()].sort((a, b) => b.n - a.n || b.amount - a.amount);
+    },
+  });
+
+  dash.calc('msp_table', {
+    inputs: ['sample', 'violations'],
+    fn: (sample, violations) => {
+      const num = (x) => { const v = Number(String(x ?? '').replace(',', '.')); return Number.isFinite(v) ? v : 0; };
+      return sample.map((s) => {
+        const rows = violations.filter((r) => String(r.msp) === String(s.msp));
+        const checked = num(s.granted_checked) + num(s.refusals_checked);
+        const applications = num(s.applications);
+        return {
+          msp: String(s.msp), name: s.name, applications, checked,
+          pct: applications ? checked / applications : 0,
+          violations: rows.length,
+          amount: rows.filter((r) => r.type === 'переплата' || r.type === 'недоплата').reduce((a, r) => a + num(r.amount), 0),
+        };
+      });
+    },
+  });
+
+  dash.calc('msp_issues', {
+    inputs: ['violations'],
+    fn: (violations) => {
+      const num = (x) => { const v = Number(String(x ?? '').replace(',', '.')); return Number.isFinite(v) ? v : 0; };
+      const m = new Map();
+      for (const r of violations) {
+        const k = r.msp + '|' + r.item + '|' + r.summary;
+        const o = m.get(k) || { msp: String(r.msp), item: r.item, summary: r.summary || '', n: 0, amount: 0, fixed: 0, left: 0 };
+        o.n += 1;
+        if (r.type === 'переплата' || r.type === 'недоплата') { o.amount += num(r.amount); o.fixed += num(r.fixed); o.left += num(r.left); }
+        m.set(k, o);
+      }
+      const key = (s) => String(s).split('.').filter(Boolean).map((p) => p.padStart(3, '0')).join('.');
+      return [...m.values()].sort((a, b) => key(a.item).localeCompare(key(b.item)));
+    },
+  });
+
+  dash.calc('ousr_kpi', {
+    inputs: ['violations'],
+    fn: (violations) => {
+      const num = (x) => { const v = Number(String(x ?? '').replace(',', '.')); return Number.isFinite(v) ? v : 0; };
+      const m = new Map();
+      for (const r of violations) {
+        if (!r.ousr) continue;
+        const k = String(r.ousr);
+        const o = m.get(k) || { ousr: k, count: 0, fin: 0, total: 0, fixed: 0, left: 0, court: 0 };
+        o.count += 1;
+        if (r.type === 'переплата' || r.type === 'недоплата') {
+          const a = num(r.amount), f = num(r.fixed), l = num(r.left);
+          o.fin += 1; o.total += a; o.fixed += f; o.left += l;
+          if (/суд/.test(r.status || '')) o.court += Math.max(0, a - f - l);
+        }
+        m.set(k, o);
+      }
+      return [...m.values()].map((o) => ({ ...o, pct: o.total ? o.fixed / o.total : 0 })).sort((a, b) => Number(a.ousr) - Number(b.ousr));
+    },
+  });
+
+  dash.calc('responsibles', {
+    inputs: ['plan'],
+    fn: (plan) => {
+      const m = new Map();
+      for (const r of plan) for (const p of String(r.responsible || '').split(',').map((x) => x.trim()).filter(Boolean)) m.set(p, (m.get(p) || 0) + 1);
+      return [...m].map(([responsible, n]) => ({ responsible, n })).sort((a, b) => {
+        const ao = /^ОУСР/.test(a.responsible) || /ОУСР/.test(a.responsible), bo = /ОУСР/.test(b.responsible);
+        if (ao !== bo) return ao ? 1 : -1;
+        const na = Number((a.responsible.match(/\d+/) || [0])[0]), nb = Number((b.responsible.match(/\d+/) || [0])[0]);
+        return ao && na !== nb ? na - nb : a.responsible.localeCompare(b.responsible, 'ru');
+      });
+    },
+  });
+
+  dash.calc('deadlines', {
+    inputs: ['plan'],
+    fn: (plan) => {
+      const m = new Map();
+      for (const r of plan) if (r.deadline) m.set(r.deadline, (m.get(r.deadline) || 0) + 1);
+      return [...m].map(([deadline, n]) => ({ deadline, n })).sort((a, b) => a.deadline.localeCompare(b.deadline));
+    },
+  });
+</script>
+
+<script>
+  const fmt2 = new Intl.NumberFormat('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const fmt0 = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 });
+  const fmtPct = new Intl.NumberFormat('ru-RU', { style: 'percent', maximumFractionDigits: 1 });
+  const big = (v) => {
+    if (Math.abs(v) >= 1e6) return new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 2 }).format(v / 1e6) + ' млн ₽';
+    if (Math.abs(v) >= 1e4) return new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 1 }).format(v / 1e3) + ' тыс. ₽';
+    return fmt2.format(v) + ' ₽';
+  };
+  const ruDate = (s) => { const [y, m, d] = String(s).split('-'); return d && m && y ? `${d}.${m}.${y}` : String(s); };
+  window.auFmt = { fmt2, fmt0, fmtPct, big, ruDate };
+
+  const kpiDraw = (field, f) => (el) => {
+    const k = dash.data('kpi');
+    if (k.status !== 'ok' || !k.data.length) { el.textContent = '—'; return; }
+    el.textContent = f(k.data[0][field]);
+  };
+  dash.draw('lead-total', kpiDraw('fin_total', big));
+  dash.draw('lead-pct', kpiDraw('fixed_pct', (v) => fmtPct.format(v)));
+  dash.draw('lead-left', kpiDraw('left', big));
+  dash.draw('lead-court', kpiDraw('court', big));
+  dash.draw('k-over', kpiDraw('overpay', big));
+  dash.draw('k-under', kpiDraw('underpay', big));
+  dash.draw('k-fixed', kpiDraw('fixed', big));
+  dash.draw('k-fixedpct', kpiDraw('fixed_pct', (v) => fmtPct.format(v)));
+  dash.draw('k-left', kpiDraw('left', big));
+  dash.draw('k-court', kpiDraw('court', big));
+  dash.draw('k-courtn', kpiDraw('court_n', (v) => fmt0.format(v)));
+  dash.draw('k-count', kpiDraw('count', (v) => fmt0.format(v)));
+  dash.draw('k-checked', kpiDraw('checked', (v) => fmt0.format(v)));
+
+  const SEGS = [['fixed', 's-fixed', 'Устранено в ходе АМ'], ['left', 's-left', 'Остаток к возврату'], ['court', 's-court', 'Через суд'], ['nonrec', 's-nonrec', 'Не подлежит возмещению']];
+
+  const stack = (id) => (el) => {
+    const d = dash.data(id);
+    el.replaceChildren();
+    if (d.status !== 'ok') { el.textContent = '—'; return; }
+    const rows = d.data;
+    const max = Math.max(1, ...rows.map((r) => r.total));
+    const tip = document.createElement('div');
+    tip.className = 'au-tip'; tip.hidden = true;
+    for (const r of rows) {
+      const row = document.createElement('div'); row.className = 'au-bar-row';
+      const head = document.createElement('div'); head.className = 'au-bar-head';
+      const name = document.createElement('span'); name.className = 'au-bar-name'; name.textContent = r.label;
+      const val = document.createElement('span'); val.className = 'au-bar-val'; val.textContent = fmt2.format(r.total);
+      head.append(name, val);
+      const track = document.createElement('div'); track.className = 'au-track';
+      track.style.width = Math.max(2, (r.total / max) * 100) + '%';
+      for (const [k, cls, label] of SEGS) {
+        if (!(r[k] > 0)) continue;
+        const s = document.createElement('div'); s.className = 'au-seg ' + cls;
+        s.style.width = (r[k] / r.total) * 100 + '%';
+        s.addEventListener('mouseenter', () => {
+          tip.replaceChildren();
+          const h = document.createElement('div'); h.className = 'au-tip-h'; h.textContent = r.label;
+          const l = document.createElement('div'); l.textContent = `${label}: ${fmt2.format(r[k])} руб.`;
+          tip.append(h, l); tip.hidden = false;
+        });
+        s.addEventListener('mousemove', (e) => {
+          const box = el.getBoundingClientRect();
+          let x = e.clientX - box.left + el.scrollLeft + 12, y = e.clientY - box.top + el.scrollTop + 14;
+          const w = tip.offsetWidth;
+          if (x + w > el.clientWidth) x = Math.max(0, el.clientWidth - w);
+          tip.style.left = x + 'px'; tip.style.top = y + 'px';
+        });
+        s.addEventListener('mouseleave', () => { tip.hidden = true; });
+        track.append(s);
+      }
+      row.append(head, track);
+      el.append(row);
+    }
+    el.append(tip);
+  };
+  dash.draw('by-msp', stack('by_msp'));
+  dash.draw('by-ousr', stack('by_ousr'));
+
+  const STATUS_CLASS = (s) => /^устранено/.test(s) ? 's-fixed' : /суд/.test(s) ? 's-court' : /частично|уведомлен|не устранено/.test(s) ? 's-left' : 's-nonrec';
+  const countBars = (id, key, clsFn) => (el) => {
+    const d = dash.data(id);
+    el.replaceChildren();
+    if (d.status !== 'ok') { el.textContent = '—'; return; }
+    const max = Math.max(1, ...d.data.map((r) => r.n));
+    for (const r of d.data) {
+      const row = document.createElement('div'); row.className = 'au-bar-row';
+      const head = document.createElement('div'); head.className = 'au-bar-head';
+      const name = document.createElement('span'); name.className = 'au-bar-name'; name.textContent = r[key];
+      const val = document.createElement('span'); val.className = 'au-bar-val'; val.textContent = fmt0.format(r.n);
+      head.append(name, val);
+      const track = document.createElement('div'); track.className = 'au-track';
+      track.style.width = Math.max(2, (r.n / max) * 100) + '%';
+      const s = document.createElement('div'); s.className = 'au-seg ' + clsFn(r[key]); s.style.width = '100%';
+      track.append(s);
+      row.append(head, track); el.append(row);
+    }
+  };
+  dash.draw('by-status', countBars('by_status', 'status', STATUS_CLASS));
+  dash.draw('by-who', (el) => {
+    const d = dash.data('by_who'), iss = dash.data('who_issues');
+    el.replaceChildren();
+    if (d.status !== 'ok') { el.textContent = '—'; return; }
+    const max = Math.max(1, ...d.data.map((r) => r.n));
+    const sel = String(dash.params().who ?? '');
+    const tip = document.createElement('div'); tip.className = 'au-tip'; tip.hidden = true;
+    for (const r of d.data) {
+      const row = document.createElement('div'); row.className = 'au-bar-row au-who-row' + (sel === r.who ? ' is-on' : '');
+      row.tabIndex = 0; row.setAttribute('role', 'button'); row.setAttribute('aria-pressed', String(sel === r.who));
+      const head = document.createElement('div'); head.className = 'au-bar-head';
+      const name = document.createElement('span'); name.className = 'au-bar-name'; name.textContent = r.who;
+      const val = document.createElement('span'); val.className = 'au-bar-val'; val.textContent = fmt0.format(r.n);
+      head.append(name, val);
+      const track = document.createElement('div'); track.className = 'au-track';
+      track.style.width = Math.max(2, (r.n / max) * 100) + '%';
+      const s = document.createElement('div'); s.className = 'au-seg s-court'; s.style.width = '100%';
+      track.append(s); row.append(head, track);
+      const showTip = () => {
+        tip.replaceChildren();
+        const h = document.createElement('div'); h.className = 'au-tip-h'; h.textContent = `${r.who}: основные нарушения`;
+        tip.append(h);
+        const list = iss.status === 'ok' ? iss.data.filter((x) => x.who === r.who) : [];
+        for (const x of list.slice(0, 6)) {
+          const l = document.createElement('div'); l.className = 'au-tip-l';
+          const a = document.createElement('span'); a.textContent = x.summary || x.item;
+          const b = document.createElement('span'); b.textContent = `${x.n} · ${x.amount ? fmt2.format(x.amount) + ' ₽' : 'без суммы'}`;
+          l.append(a, b); tip.append(l);
+        }
+        if (list.length > 6) { const m = document.createElement('div'); m.className = 'au-tip-h'; m.textContent = `и ещё ${list.length - 6} — щёлкните, чтобы увидеть все`; tip.append(m); }
+        tip.hidden = false;
+        tip.style.left = '0px';
+        tip.style.top = (row.offsetTop + row.offsetHeight + 6) + 'px';
+      };
+      row.addEventListener('mouseenter', showTip);
+      row.addEventListener('focus', showTip);
+      row.addEventListener('mouseleave', () => { tip.hidden = true; });
+      row.addEventListener('blur', () => { tip.hidden = true; });
+      const pick = () => dash.setParams({ who: sel === r.who ? null : r.who });
+      row.addEventListener('click', pick);
+      row.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
+      el.append(row);
+    }
+    el.append(tip);
+  });
+  dash.draw('who-name', (el) => { el.textContent = dash.params().who || '—'; });
+  dash.draw('who-issues', (tb) => {
+    const d = dash.data('who_issues');
+    tb.replaceChildren();
+    const w = dash.params().who;
+    if (d.status !== 'ok' || !w) return;
+    for (const r of d.data.filter((x) => x.who === w)) {
+      const tr = document.createElement('tr');
+      const add = (t, c) => { const td = document.createElement('td'); td.textContent = t; if (c) td.className = c; tr.append(td); };
+      add(r.item); add(r.summary, 'wrap'); add(fmt0.format(r.n), 'r'); add(r.amount ? fmt2.format(r.amount) : '—', 'r');
+      tb.append(tr);
+    }
+  });
+
+  dash.draw('msp-table', (tb) => {
+    const d = dash.data('msp_table');
+    tb.replaceChildren();
+    if (d.status !== 'ok') return;
+    for (const r of d.data) {
+      const tr = document.createElement('tr');
+      const cells = [[r.msp, ''], [r.name, ''], [fmt0.format(r.applications), 'r'], [fmt0.format(r.checked), 'r'], [fmtPct.format(r.pct), 'r'], [fmt0.format(r.violations), 'r'], [fmt2.format(r.amount), 'r']];
+      for (const [t, c] of cells) { const td = document.createElement('td'); td.textContent = t; if (c) td.className = c; tr.append(td); }
+      tb.append(tr);
+    }
+  });
+
+  const curMsp = () => String(dash.params().msp ?? '183');
+  dash.draw('pick-msp', (sel) => {
+    const d = dash.data('by_msp_all');
+    sel.replaceChildren(...(d.status === 'ok' ? d.data : []).map((r) => new Option(`МСП ${r.msp}${r.name ? ' · ' + r.name : ''}`, r.msp)));
+    sel.value = curMsp();
+    sel.onchange = () => dash.setParams({ msp: sel.value });
+  });
+  dash.draw('msp-sum', (el) => {
+    const d = dash.data('msp_issues');
+    if (d.status !== 'ok') { el.textContent = '—'; return; }
+    const rows = d.data.filter((r) => r.msp === curMsp());
+    const n = rows.reduce((a, r) => a + r.n, 0), sum = rows.reduce((a, r) => a + r.amount, 0);
+    el.textContent = `${fmt0.format(n)} нарушений · ${fmt2.format(sum)} руб.`;
+  });
+  dash.draw('msp-issues', (tb) => {
+    const d = dash.data('msp_issues');
+    tb.replaceChildren();
+    if (d.status !== 'ok') return;
+    for (const r of d.data.filter((x) => x.msp === curMsp())) {
+      const tr = document.createElement('tr');
+      const add = (t, c) => { const td = document.createElement('td'); td.textContent = t; if (c) td.className = c; tr.append(td); };
+      add(r.item); add(r.summary, 'wrap'); add(fmt0.format(r.n), 'r');
+      add(r.amount ? fmt2.format(r.amount) : '—', 'r'); add(r.fixed ? fmt2.format(r.fixed) : '—', 'r'); add(r.left ? fmt2.format(r.left) : '—', 'r');
+      tb.append(tr);
+    }
+  });
+
+  const curOusr = () => String(dash.params().ousr ?? '1');
+  const ousrRow = () => { const d = dash.data('ousr_kpi'); return d.status === 'ok' ? d.data.find((r) => r.ousr === curOusr()) : null; };
+  dash.draw('pick-ousr', (sel) => {
+    const d = dash.data('ousr_kpi');
+    sel.replaceChildren(...(d.status === 'ok' ? d.data : []).map((r) => new Option(`ОУСР № ${r.ousr}`, r.ousr)));
+    sel.value = curOusr();
+    sel.onchange = () => dash.setParams({ ousr: sel.value });
+  });
+  const oDraw = (f) => (el) => { const r = ousrRow(); el.textContent = r ? f(r) : '—'; };
+  dash.draw('o-count', oDraw((r) => fmt0.format(r.count)));
+  dash.draw('o-fin', oDraw((r) => fmt0.format(r.fin)));
+  dash.draw('o-total', oDraw((r) => big(r.total)));
+  dash.draw('o-fixed', oDraw((r) => big(r.fixed)));
+  dash.draw('o-pct', oDraw((r) => fmtPct.format(r.pct)));
+  dash.draw('o-left', oDraw((r) => big(r.left)));
+  dash.draw('o-court', oDraw((r) => big(r.court)));
+</script>
+
+<script>
+  const F = window.auFmt;
+  const st = window.auRegistry = window.auRegistry || { msp: '', status: '', q: '', sort: 'amount', dir: -1 };
+  const N2 = (x) => { const v = Number(String(x ?? '').replace(',', '.')); return Number.isFinite(v) ? v : 0; };
+  const pillClass = (s) => /^устранено/.test(s) ? 'p-ok' : /суд/.test(s) ? 'p-bad' : /частично|уведомлен|не устранено/.test(s) ? 'p-warn' : 'p-muted';
+
+  const filtered = () => {
+    const d = dash.data('violations');
+    if (d.status !== 'ok') return null;
+    const q = st.q.trim().toLowerCase();
+    let rows = d.data.filter((r) =>
+      (!st.msp || String(r.msp) === st.msp) &&
+      (!st.status || r.status === st.status) &&
+      (!q || [r.app, r.item, r.ousr ? 'оуср ' + r.ousr : '', r.type, r.status, r.msp, r.summary].join(' ').toLowerCase().includes(q)));
+    const k = st.sort, numeric = ['amount', 'fixed', 'left', 'msp', 'ousr'].includes(k);
+    const itemKey = (s) => String(s).split('.').filter(Boolean).map((p) => p.padStart(3, '0')).join('.');
+    rows = rows.slice().sort((a, b) => {
+      const x = numeric ? N2(a[k]) : itemKey(a[k]), y = numeric ? N2(b[k]) : itemKey(b[k]);
+      return (x < y ? -1 : x > y ? 1 : 0) * st.dir;
+    });
+    return rows;
+  };
+
+  dash.draw('vt', (tb) => {
+    tb.replaceChildren();
+    const rows = filtered();
+    if (!rows) return;
+    for (const r of rows) {
+      const tr = document.createElement('tr');
+      const add = (t, c) => { const td = document.createElement('td'); td.textContent = t; if (c) td.className = c; tr.append(td); return td; };
+      add(r.item); add(r.msp); add(r.ousr ? '№ ' + r.ousr : '—'); add(r.app); add(r.summary || '—', 'wrap'); add(r.type || '—');
+      add(N2(r.amount) ? F.fmt2.format(N2(r.amount)) : '—', 'r');
+      add(N2(r.fixed) ? F.fmt2.format(N2(r.fixed)) : '—', 'r');
+      add(N2(r.left) ? F.fmt2.format(N2(r.left)) : '—', 'r');
+      const td = add(''); const p = document.createElement('span'); p.className = 'au-pill ' + pillClass(r.status || ''); p.textContent = r.status || '—'; td.append(p);
+      tb.append(tr);
+    }
+  });
+
+  dash.draw('vt-count', (el) => {
+    const rows = filtered(), d = dash.data('violations');
+    el.textContent = rows ? `${F.fmt0.format(rows.length)} из ${F.fmt0.format(d.data.length)}` : '—';
+  });
+
+  dash.draw('f-msp', (sel) => {
+    const d = dash.data('by_msp_all');
+    sel.replaceChildren(new Option('Все меры', ''), ...(d.status === 'ok' ? d.data : []).map((r) => new Option(`МСП ${r.msp}${r.name ? ' · ' + r.name : ''} (${r.n})`, r.msp)));
+    sel.value = st.msp;
+    sel.onchange = () => { st.msp = sel.value; dash.draw('vt'); dash.draw('vt-count'); };
+  });
+  dash.draw('f-status', (sel) => {
+    const d = dash.data('by_status');
+    sel.replaceChildren(new Option('Все статусы', ''), ...(d.status === 'ok' ? d.data : []).map((r) => new Option(`${r.status} (${r.n})`, r.status)));
+    sel.value = st.status;
+    sel.onchange = () => { st.status = sel.value; dash.draw('vt'); dash.draw('vt-count'); };
+  });
+
+  document.querySelectorAll('#f-q').forEach((inp) => inp.addEventListener('input', () => { st.q = inp.value; dash.draw('vt'); dash.draw('vt-count'); }));
+  document.querySelectorAll('.au-sort').forEach((btn) => btn.addEventListener('click', () => {
+    const k = btn.dataset.sort;
+    if (st.sort === k) st.dir = -st.dir; else { st.sort = k; st.dir = ['amount', 'fixed', 'left'].includes(k) ? -1 : 1; }
+    document.querySelectorAll('.au-sort').forEach((b) => b.closest('th')?.setAttribute('aria-sort', b.dataset.sort === st.sort ? (st.dir > 0 ? 'ascending' : 'descending') : 'none'));
+    dash.draw('vt');
+  }));
+
+  const curResp = () => String(dash.params().resp ?? '');
+  const curDl = () => String(dash.params().dl ?? '');
+  const respRows = () => {
+    const d = dash.data('plan');
+    if (d.status !== 'ok') return null;
+    const p = curResp();
+    return p ? d.data.filter((r) => String(r.responsible || '').split(',').map((x) => x.trim()).includes(p)) : d.data;
+  };
+  const planRows = () => {
+    const rows = respRows();
+    const dl = curDl();
+    return rows && dl ? rows.filter((r) => r.deadline === dl) : rows;
+  };
+  dash.draw('pick-dl', (sel) => {
+    const d = dash.data('deadlines');
+    sel.replaceChildren(new Option('Все сроки', ''), ...(d.status === 'ok' ? d.data : []).map((r) => new Option(`до ${F.ruDate(r.deadline)}`, r.deadline)));
+    sel.value = curDl();
+    sel.onchange = () => dash.setParams({ dl: sel.value || null });
+  });
+  dash.draw('pick-resp', (sel) => {
+    const d = dash.data('responsibles');
+    sel.replaceChildren(new Option('Все ответственные', ''), ...(d.status === 'ok' ? d.data : []).map((r) => new Option(`${r.responsible} (${r.n})`, r.responsible)));
+    sel.value = curResp();
+    sel.onchange = () => dash.setParams({ resp: sel.value || null });
+  });
+  const word = (n) => { const a = n % 10, b = n % 100; return a === 1 && b !== 11 ? 'мероприятие' : a >= 2 && a <= 4 && (b < 12 || b > 14) ? 'мероприятия' : 'мероприятий'; };
+  dash.draw('resp-sum', (el) => {
+    const rows = planRows();
+    el.textContent = rows ? `${rows.length} ${word(rows.length)}` : '—';
+  });
+  dash.draw('dl', (el) => {
+    const rows = respRows();
+    el.replaceChildren();
+    if (!rows) { el.textContent = '—'; return; }
+    const m = new Map();
+    for (const r of rows) if (r.deadline) m.set(r.deadline, (m.get(r.deadline) || 0) + 1);
+    for (const [deadline, n] of [...m].sort((x, y) => x[0].localeCompare(y[0]))) {
+      const c = document.createElement('button'); c.type = 'button'; c.className = 'au-chip';
+      c.setAttribute('aria-pressed', String(curDl() === deadline));
+      c.addEventListener('click', () => dash.setParams({ dl: curDl() === deadline ? null : deadline }));
+      const a = document.createElement('span'); a.className = 'au-chip-d'; a.textContent = F.ruDate(deadline);
+      const b = document.createElement('span'); b.className = 'au-chip-n'; b.textContent = `${n} ${word(n)}`;
+      c.append(a, b); el.append(c);
+    }
+  });
+
+  dash.draw('plan-table', (tb) => {
+    const rows = planRows();
+    tb.replaceChildren();
+    if (!rows) return;
+    for (const r of rows) {
+      const tr = document.createElement('tr');
+      const add = (t, c) => { const td = document.createElement('td'); td.textContent = t; if (c) td.className = c; tr.append(td); };
+      add(r.item); add(r.action, 'pre'); add(r.responsible); add(F.ruDate(r.deadline), 'r');
+      tb.append(tr);
+    }
+  });
+
+  dash.draw('o-table', (tb) => {
+    const d = dash.data('violations');
+    tb.replaceChildren();
+    if (d.status !== 'ok') return;
+    const o = String(dash.params().ousr ?? '1');
+    const key = (s) => String(s).split('.').filter(Boolean).map((p) => p.padStart(3, '0')).join('.');
+    const rows = d.data.filter((r) => String(r.ousr) === o).sort((a, b) => key(a.item).localeCompare(key(b.item)));
+    for (const r of rows) {
+      const tr = document.createElement('tr');
+      const add = (t, c) => { const td = document.createElement('td'); td.textContent = t; if (c) td.className = c; tr.append(td); return td; };
+      add(r.item); add(r.msp); add(r.app); add(r.summary || '—', 'wrap');
+      add(N2(r.amount) ? F.fmt2.format(N2(r.amount)) : '—', 'r');
+      add(N2(r.fixed) ? F.fmt2.format(N2(r.fixed)) : '—', 'r');
+      add(N2(r.left) ? F.fmt2.format(N2(r.left)) : '—', 'r');
+      const td = add(''); const p = document.createElement('span'); p.className = 'au-pill ' + pillClass(r.status || ''); p.textContent = r.status || '—'; td.append(p);
+      tb.append(tr);
+    }
+  });
+  dash.draw('o-plan', (tb) => {
+    const d = dash.data('plan');
+    tb.replaceChildren();
+    if (d.status !== 'ok') return;
+    const name = 'ОУСР № ' + String(dash.params().ousr ?? '1');
+    for (const r of d.data.filter((x) => x.responsible === name || /все оуср/i.test(x.responsible || ''))) {
+      const tr = document.createElement('tr');
+      const add = (t, c) => { const td = document.createElement('td'); td.textContent = t; if (c) td.className = c; tr.append(td); };
+      add(r.item); add(r.action, 'pre'); add(r.responsible); add(F.ruDate(r.deadline), 'r');
+      tb.append(tr);
+    }
+  });
+</script>
+
+<script>
+  const show = (name) => {
+    document.querySelectorAll('[data-pane]').forEach((s) => { s.hidden = s.dataset.pane !== name; });
+    document.querySelectorAll('.au-tab').forEach((t) => t.setAttribute('aria-selected', String(t.dataset.tab === name)));
+  };
+  document.querySelectorAll('.au-tab').forEach((t) => t.addEventListener('click', () => { show(t.dataset.tab); dash.setLink(t.dataset.tab); }));
+  dash.onData(() => {
+    const d = dash.data('ousr_kpi');
+    const o = String(dash.params().ousr ?? '1');
+    const r = d.status === 'ok' ? d.data.find((x) => x.ousr === o) : null;
+    const done = !!r && r.left === 0 && r.court === 0;
+    const court = !!r && r.left === 0 && r.court > 0;
+    document.querySelectorAll('[data-ousr-msg="done"]').forEach((e) => { e.hidden = !done; });
+    document.querySelectorAll('[data-ousr-msg="court"]').forEach((e) => { e.hidden = !court; });
+    document.querySelectorAll('[data-ousr-sub="done"]').forEach((e) => { e.hidden = !done; });
+    document.querySelectorAll('[data-ousr-sub="open"]').forEach((e) => { e.hidden = done; });
+  });
+  dash.onData(() => {
+    const w = dash.params().who;
+    document.querySelectorAll('[data-who-detail]').forEach((e) => { e.hidden = !w; });
+  });
+  document.querySelectorAll('[data-who-clear]').forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); dash.setParams({ who: null }); }));
+  const start = location.hash.slice(1);
+  if (['overview', 'registry', 'ousr', 'plan'].includes(start)) show(start);
+  dash.start();
+</script>
+</body>
+</html>
