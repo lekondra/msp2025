@@ -78,6 +78,7 @@
     violations: ['item', 'msp', 'ousr', 'app', 'kind', 'type', 'amount', 'fixed', 'left', 'status', 'who', 'npa', 'summary', 'plan'],
     sample: ['msp', 'name', 'applications', 'granted', 'granted_checked', 'granted_pct', 'refusals', 'refusals_checked', 'refusals_pct'],
     plan: ['row', 'item', 'recommendation', 'action', 'deadline', 'responsible'],
+    ousr_ref: ['ousr', 'district', 'head'],
   };
   function detectTable(rows) {
     if (!rows.length) return null;
@@ -85,6 +86,7 @@
     if (keys.indexOf('app') >= 0) return 'violations';
     if (keys.indexOf('responsible') >= 0) return 'plan';
     if (keys.indexOf('granted_checked') >= 0) return 'sample';
+    if (keys.indexOf('district') >= 0 && keys.indexOf('head') >= 0) return 'ousr_ref';
     return null;
   }
   function missingCols(name, rows) {

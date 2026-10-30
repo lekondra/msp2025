@@ -109,13 +109,14 @@
   .au-who-row.is-on .au-seg { filter: brightness(0.85); }
   .au-tip-l { display: flex; justify-content: space-between; gap: 12px; white-space: normal; max-width: 26rem; }
   .au-tip-l span:last-child { white-space: nowrap; color: var(--cds-text-secondary); }
+  .au-ousr-ref { font-size: 15px; min-width: 0; overflow-wrap: anywhere; }
 </style>
 <script src="lib.js"></script>
 <script>
   // Мини-среда выполнения: читает data/*.csv при каждом открытии страницы,
   // считает показатели и перерисовывает блоки. Обновили CSV на GitHub — обновилась страница.
   window.dash = (function () {
-    var SOURCES = ['violations', 'sample', 'plan'];
+    var SOURCES = ['violations', 'sample', 'plan', 'ousr_ref'];
     var raw = {}, calcs = [], draws = new Map(), listeners = [], cache = {};
     var params = { msp: '183', ousr: '1' };
     var ready = false;
@@ -358,6 +359,7 @@
       <h2>Окружное управление</h2>
       <div class="au-pick">
         <select id="pick-ousr" data-draw="pick-ousr" aria-label="ОУСР"></select>
+        <span class="au-ousr-ref"><span data-draw="o-district">—</span> (<span data-draw="o-head">—</span>)</span>
       </div>
     </div>
     <p class="au-banner is-ok" data-ousr-msg="done" hidden>Все нарушения устранены в ходе аудита</p>
@@ -454,7 +456,7 @@
     </div>
   </section>
 
-  <footer class="au-foot">Данные: файлы <code>data/violations.csv</code>, <code>data/sample.csv</code>, <code>data/plan.csv</code> (<span id="au-rows">—</span>). Загружены: <span id="au-loaded">—</span>. Номера заявлений частично скрыты.</footer>
+  <footer class="au-foot">Данные: файлы <code>data/violations.csv</code>, <code>data/sample.csv</code>, <code>data/plan.csv</code>, <code>data/ousr_ref.csv</code> (<span id="au-rows">—</span>). Загружены: <span id="au-loaded">—</span>. Номера заявлений частично скрыты.</footer>
 </div>
 
 <script>
@@ -844,6 +846,10 @@
     sel.value = curOusr();
     sel.onchange = () => dash.setParams({ ousr: sel.value });
   });
+  const refRow = () => { const d = dash.data('ousr_ref'); return d.status === 'ok' ? d.data.find((r) => String(r.ousr) === curOusr()) : null; };
+  const refDraw = (field) => (el) => { const r = refRow(); el.textContent = r ? r[field] : '—'; };
+  dash.draw('o-district', refDraw('district'));
+  dash.draw('o-head', refDraw('head'));
   const oDraw = (f) => (el) => { const r = ousrRow(); el.textContent = r ? f(r) : '—'; };
   dash.draw('o-count', oDraw((r) => fmt0.format(r.count)));
   dash.draw('o-fin', oDraw((r) => fmt0.format(r.fin)));
